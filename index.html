@@ -1,0 +1,33 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>ESP 野球拳</title>
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--text:#182033;--muted:#687185;--line:#d9dfeb;--accent:#6676ff;--esp:#fff1a8;--win:#138a57}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+.wrap{max-width:900px;margin:auto;padding:10px}.grid{display:grid;grid-template-columns:1.05fr .95fr;gap:14px;align-items:start}
+.head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}.small{font-size:13px;color:var(--muted)}.big{font-size:23px;font-weight:850}
+.badge{border:1px solid var(--line);border-radius:999px;padding:7px 12px;background:#fff;font-size:13px;font-weight:700}.badge.esp{background:var(--esp);border-color:#d9bd48;color:#5b4900}
+.stage{position:relative;height:540px;border:1px solid var(--line);border-radius:20px;overflow:hidden;background:linear-gradient(180deg,#eef3ff,#fff 62%)}
+#speech{position:absolute;z-index:3;left:12px;right:12px;top:12px;background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:14px;padding:11px 12px;text-align:center;font-size:15px}
+#hero{position:absolute;inset:64px 8px 4px 8px;background-image:url('./sprite.jpg');background-repeat:no-repeat;background-size:600% 100%;background-position:0% 0%;transition:transform .16s ease,filter .2s ease}
+#hero.pop{transform:scale(1.025)}#hero.espglow{filter:drop-shadow(0 0 13px rgba(255,199,0,.65))}
+.stars{text-align:center;font-size:29px;letter-spacing:4px;margin-top:9px}.costume{text-align:center;color:var(--muted);font-size:12px;letter-spacing:.1em}
+.side{display:flex;flex-direction:column;gap:12px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px}.pred{font-size:56px;font-weight:850;margin:3px 0}
+.btns{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:10px}.hand{min-height:76px;font-size:36px;border:1px solid var(--line);border-radius:16px;background:#fff}.hand:active{transform:scale(.97)}
+button{cursor:pointer}button:disabled{opacity:.42;cursor:not-allowed}.result{min-height:55px;margin-top:10px;line-height:1.55;font-size:14px}.stat{display:flex;justify-content:space-between;padding:4px 0}
+.rules{border-top:1px solid var(--line);margin-top:8px;padding-top:8px;color:var(--muted);font-size:13px;line-height:1.55}.reset{width:100%;min-height:48px;border:0;border-radius:15px;background:var(--accent);color:#fff;font-size:16px;font-weight:800}.clear{color:var(--win);font-weight:850}
+@media(max-width:700px){.grid{grid-template-columns:1fr}.stage{height:475px}#hero{inset:64px 4px 3px}}@media(max-width:420px){.stage{height:450px}#hero{inset:64px 2px 3px}.hand{min-height:70px}}
+</style></head><body><div class="wrap"><div class="grid"><section><div class="head"><div><div class="small">5勝で GAME CLEAR</div><div id="round" class="big">ROUND 1</div></div><div id="badge" class="badge">通常状態</div></div>
+<div class="stage"><div id="speech">じゃんけんしよ？ 5回勝ったら君の勝ち。</div><div id="hero"></div></div><div id="stars" class="stars">☆☆☆☆☆</div><div id="costume" class="costume">CASUAL</div></section>
+<section class="side"><div class="card"><div class="small">相手の手</div><div id="prediction" class="pred">？</div><div id="note" class="small">通常時は見えない。</div></div>
+<div class="card"><div style="font-weight:850">君の手</div><div class="btns"><button class="hand" data-hand="rock">✊</button><button class="hand" data-hand="scissors">✌️</button><button class="hand" data-hand="paper">✋</button></div><div id="result" class="result">好きな手を選んでね。</div></div>
+<div class="card"><div class="stat"><span>勝ち</span><b id="wins">0</b></div><div class="stat"><span>負け</span><b id="losses">0</b></div><div class="stat"><span>あいこ</span><b id="draws">0</b></div><div class="rules">通常時：各ラウンド開始時10%でESP突入<br>ESP中：相手の手を先読み<br>ラウンド終了後：50%でESP転落</div></div><button id="reset" class="reset">最初から</button></section></div></div>
+<script>
+const pos=['0%','20%','40%','60%','80%','100%'],lab=['CASUAL','HOODIE','SUMMER','BEACH','SWIMSUIT','YOU WIN'];
+const H=['rock','scissors','paper'],I={rock:'✊',scissors:'✌️',paper:'✋'},N={rock:'グー',scissors:'チョキ',paper:'パー'},B={rock:'scissors',scissors:'paper',paper:'rock'};
+const $=id=>document.getElementById(id),buttons=[...document.querySelectorAll('[data-hand]')];let s;
+function rnd(){return H[Math.floor(Math.random()*3)]}
+function prep(){if(!s.esp&&Math.random()<.1)s.esp=true;s.opp=rnd()}
+function render(){let i=Math.min(5,s.w);$('round').textContent=s.done?'GAME CLEAR':'ROUND '+s.r;$('badge').textContent=s.esp&&!s.done?'⚡ ESP状態':'通常状態';$('badge').className='badge'+(s.esp&&!s.done?' esp':'');$('wins').textContent=s.w;$('losses').textContent=s.l;$('draws').textContent=s.d;$('prediction').textContent=s.esp&&!s.done?I[s.opp]:'？';$('note').textContent=s.esp&&!s.done?'相手は「'+N[s.opp]+'」を出す！':'通常時は見えない。';$('stars').textContent='★'.repeat(s.w)+'☆'.repeat(5-s.w);$('hero').style.backgroundPosition=pos[i]+' 0%';$('hero').classList.toggle('espglow',s.esp&&!s.done);$('costume').textContent=lab[i]}
+function play(p){if(s.done)return;let o=s.opp,j=p===o?'d':B[p]===o?'w':'l';if(j==='w'){s.w++;$('result').textContent=`君 ${I[p]} VS ${I[o]} 相手 → 勝ち！`;$('speech').textContent=['えっ、負けた！','また！？','ちょっと強くない？','……絶対なんかやってるでしょ。','うそ、あと1回……！'][Math.min(s.w-1,4)]}else if(j==='l'){s.l++;$('result').textContent=`君 ${I[p]} VS ${I[o]} 相手 → 負け！`;$('speech').textContent='ふふん♪ まだまだだね。'}else{s.d++;$('result').textContent=`君 ${I[p]} VS ${I[o]} 相手 → あいこ！`;$('speech').textContent='あいこ！ もう一回！'}if(s.w>=5){s.done=true;$('speech').textContent='はいはい、完敗！ 君の勝ちっ。';$('result').innerHTML+='　<span class="clear">🎉 GAME CLEAR</span>';buttons.forEach(b=>b.disabled=true);render();return}if(s.esp&&Math.random()<.5){s.esp=false;$('result').textContent+='　⚡ ESP終了'}s.r++;prep();render()}
+function reset(){s={w:0,l:0,d:0,r:1,esp:false,opp:null,done:false};buttons.forEach(b=>b.disabled=false);$('speech').textContent='じゃんけんしよ？ 5回勝ったら君の勝ち。';$('result').textContent='好きな手を選んでね。';prep();render()}
+buttons.forEach(b=>b.onclick=()=>play(b.dataset.hand));$('reset').onclick=reset;reset();
+</script></body></html>
